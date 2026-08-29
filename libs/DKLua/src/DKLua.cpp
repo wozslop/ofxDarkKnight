@@ -273,7 +273,10 @@ std::time_t DKLua::getLastModified( ofFile& _file )
 {
     if( _file.exists() )
     {
-        return filesystem::last_write_time(_file.path());
+        // C++17 last_write_time returns file_time_type, not the time_t OF 0.11.x's shim gave.
+        // Callers only compare with !=, so raw ticks suffice - NOT a real Unix timestamp.
+        return static_cast<std::time_t>(
+            filesystem::last_write_time(_file.path()).time_since_epoch().count());
     }
     else
     {
