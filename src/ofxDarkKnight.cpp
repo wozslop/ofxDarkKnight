@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2018 Luis Fernando Garc’a PŽrez [http://luiscript.com]
+ Copyright (C) 2018 Luis Fernando Garcï¿½a Pï¿½rez [http://luiscript.com]
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -150,9 +150,11 @@ void ofxDarkKnight::onComponentListChange(ofxDatGuiScrollViewEvent e)
 
 void ofxDarkKnight::handleKeyPressed(ofKeyEventArgs& keyboard)
 {
-	if (keyboard.key == OF_KEY_COMMAND || keyboard.key == OF_KEY_CONTROL) cmdKey = true;
-	if (keyboard.key == OF_KEY_SHIFT) shiftKey = true;
-	if (keyboard.key == OF_KEY_ALT) altKey = true;
+	// Do NOT use OF_KEY_SHIFT/CONTROL/ALT here: those are modifier bitmasks (0x1/0x2/0x4), not the key codes GLFW sends (0xe60+).
+	if (keyboard.key == OF_KEY_LEFT_CONTROL || keyboard.key == OF_KEY_RIGHT_CONTROL ||
+	    keyboard.key == OF_KEY_LEFT_SUPER   || keyboard.key == OF_KEY_RIGHT_SUPER) cmdKey = true;
+	if (keyboard.key == OF_KEY_LEFT_SHIFT || keyboard.key == OF_KEY_RIGHT_SHIFT) shiftKey = true;
+	if (keyboard.key == OF_KEY_LEFT_ALT   || keyboard.key == OF_KEY_RIGHT_ALT)   altKey = true;
 
 	// toggle show explorer
 	if (cmdKey && keyboard.keycode == 257 && !keyboard.isRepeat)
@@ -186,9 +188,10 @@ void ofxDarkKnight::handleKeyPressed(ofKeyEventArgs& keyboard)
 
 void ofxDarkKnight::handleKeyReleased(ofKeyEventArgs& keyboard)
 {
-	if (keyboard.key == OF_KEY_COMMAND || keyboard.key == OF_KEY_CONTROL) cmdKey = false;
-	if (keyboard.key == OF_KEY_SHIFT) shiftKey = false;
-	if (keyboard.key == OF_KEY_ALT) altKey = false;
+	if (keyboard.key == OF_KEY_LEFT_CONTROL || keyboard.key == OF_KEY_RIGHT_CONTROL ||
+	    keyboard.key == OF_KEY_LEFT_SUPER   || keyboard.key == OF_KEY_RIGHT_SUPER) cmdKey = false;
+	if (keyboard.key == OF_KEY_LEFT_SHIFT || keyboard.key == OF_KEY_RIGHT_SHIFT) shiftKey = false;
+	if (keyboard.key == OF_KEY_LEFT_ALT   || keyboard.key == OF_KEY_RIGHT_ALT)   altKey = false;
 }
 
 void ofxDarkKnight::handleMousePressed(ofMouseEventArgs &mouse)
