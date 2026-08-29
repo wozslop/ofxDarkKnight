@@ -32,6 +32,8 @@ void ofApp::setup()
     app.moduleList["SCREEN OUTPUT"] = &moduleType<DKScreenOutput>;
     app.moduleList["SKETCH POOL"] = &moduleType<DKMediaPool>;
     app.moduleList["SKETCH POOL: DEMO"] = &moduleType<Basic>;
+
+    app.setup();
 }
 
 void ofApp::update()
