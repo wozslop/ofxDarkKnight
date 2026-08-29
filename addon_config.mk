@@ -24,7 +24,7 @@ meta:
 common:
 	# dependencies with other addons, a list of them separated by spaces 
 	# or use += in several lines
-	ADDON_DEPENDENCIES += ofxDarkKnight
+	# NOTE: do not list ofxDarkKnight here - a self-dependency makes projectGenerator recurse forever
 	ADDON_DEPENDENCIES += ofxMidi
 	ADDON_DEPENDENCIES += ofxOsc
 	ADDON_DEPENDENCIES += ofxAbletonLink
