@@ -53,6 +53,10 @@ private:
     ofVec2f pendingResolution;
     bool resolutionChangePending;
 
+    // Cleared whenever the list is opened. Dragging with the right button held fires
+    // onScrollViewEvent once per row, which inserted a module for every row crossed.
+    bool moduleInsertedFromList;
+
     bool showExplorer;
     bool drawing;
     bool cmdKey;
@@ -110,6 +114,7 @@ public:
     
     void onResolutionChange(ofVec2f &);
     void applyPendingResolution();
+    bool isPointInModuleList(int x, int y) const;
     void onComponentListChange(ofxDatGuiScrollViewEvent e);
     void newMidiMessage(ofxMidiMessage &);
     
