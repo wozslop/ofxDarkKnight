@@ -34,7 +34,7 @@ ofxDarkKnight::~ofxDarkKnight()
 
 void ofxDarkKnight::setup()
 {
-    loadWires = shiftKey = altKey = cmdKey = midiMapMode = drawing = showExplorer = false;
+    loadWires = shiftKey = altKey = cmdKey = midiMapMode = drawing = showExplorer = resolutionChangePending = false;
     translation = { 0, 0 };
     resolution = { 1920, 1080 };
 	zoom = 1.0;
@@ -79,6 +79,8 @@ void ofxDarkKnight::setup()
 
 void ofxDarkKnight::update()
 {
+    if (resolutionChangePending) applyPendingResolution();
+
     for (auto wire : wires)
         if(wire.inputModule->getModuleEnabled() &&
            wire.outputModule->getModuleEnabled())
@@ -645,10 +647,23 @@ void ofxDarkKnight::deleteComponentWires(ofxDatGuiComponent * component, int del
 
 void ofxDarkKnight::onResolutionChange(ofVec2f & newResolution)
 {
-    resolution = newResolution;
+    pendingResolution = newResolution;
+    resolutionChangePending = true;
+}
+
+void ofxDarkKnight::applyPendingResolution()
+{
+    resolutionChangePending = false;
+    resolution = pendingResolution;
+
     for(pair<string, DKModule*> module : modules )
     {
-        module.second->setResolution(newResolution.x, newResolution.y);
+        // PROJECT (DKConfig) owns the dropdown that triggered this. Its setup() rebuilds
+        // that dropdown and re-registers listeners, so re-running it duplicates handlers
+        // for every change. It has no render target to resize either.
+        if (module.first.rfind("PROJECT", 0) == 0) continue;
+
+        module.second->setResolution(pendingResolution.x, pendingResolution.y);
         module.second->setup();
     }
 }

@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2018 Luis Fernando Garc’a PŽrez [http://luiscript.com]
+ Copyright (C) 2018 Luis Fernando Garcï¿½a Pï¿½rez [http://luiscript.com]
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,12 @@ private:
     ofVec2f resolution;
     ofVec2f translation;
     ofPoint pointer;
-    
+
+    // Applying a resolution change inside DKConfig's dropdown callback re-enters
+    // DKConfig::setup(), rebuilding the dropdown still dispatching it - use after free.
+    ofVec2f pendingResolution;
+    bool resolutionChangePending;
+
     bool showExplorer;
     bool drawing;
     bool cmdKey;
@@ -104,6 +109,7 @@ public:
     void handleDragEvent(ofDragInfo&);
     
     void onResolutionChange(ofVec2f &);
+    void applyPendingResolution();
     void onComponentListChange(ofxDatGuiScrollViewEvent e);
     void newMidiMessage(ofxMidiMessage &);
     
