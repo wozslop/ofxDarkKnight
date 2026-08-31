@@ -34,7 +34,7 @@ ofxDarkKnight::~ofxDarkKnight()
 
 void ofxDarkKnight::setup()
 {
-    loadWires = shiftKey = altKey = cmdKey = midiMapMode = drawing = showExplorer = resolutionChangePending = false;
+    loadWires = shiftKey = altKey = cmdKey = midiMapMode = drawing = showExplorer = resolutionChangePending = moduleInsertedFromList = false;
     translation = { 0, 0 };
     resolution = { 1920, 1080 };
 	zoom = 1.0;
@@ -124,9 +124,20 @@ void ofxDarkKnight::draw()
 
 }
 
+bool ofxDarkKnight::isPointInModuleList(int x, int y) const
+{
+    // draw() renders componentsList after ofPopMatrix(), so it lives in screen space -
+    // never test it against pan/zoom-translated canvas coordinates.
+    return x >= componentsList->getX() &&
+           x <= componentsList->getX() + componentsList->getWidth() &&
+           y >= componentsList->getY() &&
+           y <= componentsList->getY() + componentsList->getHeight();
+}
+
 void ofxDarkKnight::toggleList()
 {
     showExplorer = !showExplorer;
+    if (showExplorer) moduleInsertedFromList = false;
 }
 
 void ofxDarkKnight::toggleMappingMode()
@@ -146,6 +157,9 @@ void ofxDarkKnight::toggleMappingMode()
 
 void ofxDarkKnight::onComponentListChange(ofxDatGuiScrollViewEvent e)
 {
+    if (moduleInsertedFromList) return;
+    moduleInsertedFromList = true;
+
     addModule(e.target->getName());
     toggleList();
 }
@@ -198,6 +212,14 @@ void ofxDarkKnight::handleKeyReleased(ofKeyEventArgs& keyboard)
 
 void ofxDarkKnight::handleMousePressed(ofMouseEventArgs &mouse)
 {
+    if (mouse.button == 0 && showExplorer && !isPointInModuleList(mouse.x, mouse.y))
+    {
+        // Consume the click: dismissing the list must not also start a wire or land
+        // on whatever module sits underneath it.
+        showExplorer = false;
+        return;
+    }
+
 	int x = (int)(mouse.x - translation.x) / zoom;
 	int y = (int)(mouse.y - translation.y) / zoom;
 
