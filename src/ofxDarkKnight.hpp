@@ -99,6 +99,7 @@ public:
     void deleteModule(string);
     void deleteComponentWires(ofxDatGuiComponent *, int);
     void deleteFocusedModule();
+	void deleteLastAddedModule();
 	void deleteAllModules();
 	void removeModuleAndWires(const string & moduleName, DKModule * module);
     

@@ -183,13 +183,25 @@ void ofxDarkKnight::handleKeyPressed(ofKeyEventArgs& keyboard)
 		toggleMappingMode();
 	}
 
-	// Delete the focused module. GLFW keycodes: 259 backspace, 261 delete, 46 period.
-	// The isRepeat guard matters - without it, holding the combo autorepeats and deletes
-	// one module after another.
+	// Delete the focused module. GLFW keycodes: 261 delete, 46 period.
+	// The isRepeat guard matters on all of these - without it, holding a combo autorepeats
+	// and deletes one module after another.
 	if (cmdKey && !keyboard.isRepeat &&
-		(keyboard.keycode == 259 || keyboard.keycode == 261 || keyboard.keycode == 46))
+		(keyboard.keycode == 261 || keyboard.keycode == 46))
 	{
 		deleteFocusedModule();
+	}
+
+	// cmd + backspace (259) -> delete the most recently added module
+	if (cmdKey && !keyboard.isRepeat && keyboard.keycode == 259)
+	{
+		deleteLastAddedModule();
+	}
+
+	// cmd + shift + n (78) -> clear the patch
+	if (cmdKey && shiftKey && !keyboard.isRepeat && keyboard.keycode == 78)
+	{
+		deleteAllModules();
 	}
 
 	//cmd + shift + 's' to save preset
@@ -574,6 +586,7 @@ DKModule * ofxDarkKnight::addModule(string moduleName)
             m->setModuleMidiMapMode(midiMapMode);
 			int childModuleId = getNextModuleId();
 			m->setModuleId(childModuleId);
+			m->moduleIsChild = true;
 			string childNameWithId = childName + "@" + ofToString(childModuleId);
             modules.insert({childNameWithId, m}); 
             mIndex ++;
@@ -635,6 +648,29 @@ void ofxDarkKnight::deleteFocusedModule()
             break;
         }
     }
+}
+
+void ofxDarkKnight::deleteLastAddedModule()
+{
+    // Highest module id wins. Children are skipped: a media pool registers its parent and
+    // then every canvas inside it, so the highest id in the map belongs to a child rather
+    // than to the node that was actually added.
+    string lastName;
+    DKModule * last = nullptr;
+    int highestId = -1;
+
+    for(pair<string, DKModule*> module : modules)
+    {
+        if(module.second->moduleIsChild) continue;
+        if(module.second->getModuleId() > highestId)
+        {
+            highestId = module.second->getModuleId();
+            lastName = module.first;
+            last = module.second;
+        }
+    }
+
+    if(last != nullptr) removeModuleAndWires(lastName, last);
 }
 
 void ofxDarkKnight::deleteAllModules()
