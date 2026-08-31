@@ -100,6 +100,7 @@ public:
     void deleteComponentWires(ofxDatGuiComponent *, int);
     void deleteFocusedModule();
 	void deleteAllModules();
+	void removeModuleAndWires(const string & moduleName, DKModule * module);
     
     //mouse event handlers
     void handleMousePressed(ofMouseEventArgs&);

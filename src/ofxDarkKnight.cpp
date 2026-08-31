@@ -183,7 +183,11 @@ void ofxDarkKnight::handleKeyPressed(ofKeyEventArgs& keyboard)
 		toggleMappingMode();
 	}
 
-	if (cmdKey && keyboard.key == OF_KEY_BACKSPACE)
+	// Delete the focused module. GLFW keycodes: 259 backspace, 261 delete, 46 period.
+	// The isRepeat guard matters - without it, holding the combo autorepeats and deletes
+	// one module after another.
+	if (cmdKey && !keyboard.isRepeat &&
+		(keyboard.keycode == 259 || keyboard.keycode == 261 || keyboard.keycode == 46))
 	{
 		deleteFocusedModule();
 	}
@@ -585,51 +589,49 @@ void ofxDarkKnight::deleteModule(string moduleName)
 }
 
 //delete wires connected to focused component and then delete the component
+// Tears down one module completely: wires first, then its GUI, then the module. Extracted
+// from deleteFocusedModule so every delete path frees wires identically - dropping a module
+// while wires still reference it leaves draw() dereferencing a freed DKModule through
+// DKWire::outputModule / inputModule.
+void ofxDarkKnight::removeModuleAndWires(const string & moduleName, DKModule * module)
+{
+    vector<ofxDatGuiComponent*> components = module->gui->getItems();
+
+    for(auto component : components)
+    {
+        //true if component has children (it's a folder)
+        if(component->children.size() > 0)
+        {
+            for(auto childComponent : component->children)
+                deleteComponentWires(childComponent, module->getModuleId());
+        }
+        else deleteComponentWires(component, module->getModuleId());
+    }
+
+    vector<DKWire>::iterator itw = wires.begin();
+    while(itw != wires.end())
+    {
+        if(module == itw->outputModule || module == itw->inputModule)
+        {
+            wires.erase(itw);
+            itw = wires.begin();
+        } else itw++;
+    }
+
+    module->inputs.clear();
+    module->outputs.clear();
+    module->gui->deleteItems();
+    modules.erase(moduleName);
+    module->unMount();
+}
+
 void ofxDarkKnight::deleteFocusedModule()
 {
-    //iterate all the modules to get the focused one
     for(pair<string, DKModule*> module : modules )
     {
-        //focused module
         if(module.second->gui->getFocused())
         {
-            //get all the items of the focused component
-            vector<ofxDatGuiComponent*> components = module.second->gui->getItems();
-            
-            //iterate all the components to compare with the wires list
-            for(auto component : components)
-            {
-                //true if component has children (it's a folder)
-                if(component->children.size() > 0)
-                {
-                    //iterate all component's children
-                    for(auto childComponent : component->children)
-                    {
-                        deleteComponentWires(childComponent, module.second->getModuleId());
-                    }
-                }
-                //component doesn't have children
-                else {
-                    deleteComponentWires(component, module.second->getModuleId());
-                }
-            }
-            vector<DKWire>::iterator itw = wires.begin();
-            while(itw != wires.end())
-            {
-                if(module.second == itw->outputModule || module.second == itw->inputModule)
-                {
-                    wires.erase(itw);
-                    itw = wires.begin();
-                } else {
-                    itw++;
-                }
-            }
-            // now that we deleted all the module's wires procede to unmount and delete the module it self
-            module.second->inputs.clear();
-            module.second->outputs.clear();
-            module.second->gui->deleteItems();
-            modules.erase(module.first);
-            module.second->unMount();
+            removeModuleAndWires(module.first, module.second);
             break;
         }
     }
@@ -637,15 +639,12 @@ void ofxDarkKnight::deleteFocusedModule()
 
 void ofxDarkKnight::deleteAllModules()
 {
-	for (auto module : modules)
-	{
-		module.second->inputs.clear();
-		module.second->outputs.clear();
-		module.second->gui->deleteItems();
-		module.second->unMount();
-	}
+    // Snapshot first: removeModuleAndWires erases from modules, which would invalidate an
+    // iterator over it. This previously cleared modules without ever touching wires.
+    vector<pair<string, DKModule*>> snapshot(modules.begin(), modules.end());
 
-	modules.clear();
+    for (auto & module : snapshot)
+        removeModuleAndWires(module.first, module.second);
 }
 
 void ofxDarkKnight::deleteComponentWires(ofxDatGuiComponent * component, int deletedModuleId)
