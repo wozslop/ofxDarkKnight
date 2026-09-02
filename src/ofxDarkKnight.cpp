@@ -683,7 +683,15 @@ void ofxDarkKnight::deleteAllModules()
     vector<pair<string, DKModule*>> snapshot(modules.begin(), modules.end());
 
     for (auto & module : snapshot)
+    {
+        // PROJECT (DKConfig) is project settings, not patch content, and it cannot be
+        // recreated for free: a fresh instance needs its onResolutionChangeEvent listener
+        // re-registered by addModule and starts from the default resolution rather than the
+        // one in use. Keeping it means clearing leaves a blank patch, not a dead canvas.
+        if (module.first.rfind("PROJECT", 0) == 0) continue;
+
         removeModuleAndWires(module.first, module.second);
+    }
 }
 
 void ofxDarkKnight::deleteComponentWires(ofxDatGuiComponent * component, int deletedModuleId)
