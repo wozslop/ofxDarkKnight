@@ -53,6 +53,7 @@ public:
     void addModuleParameters();
     ofFbo * getFbo();
     void setFbo(ofFbo *);
+    void onResolutionChanged(int w, int h) { fbo.allocate(w, h); }
     void addParameter(ofxDatGuiButtonEvent);
     void onParameterNameChange(ofxDatGuiTextInputEvent);
     void onParameterMinChange(ofxDatGuiTextInputEvent);

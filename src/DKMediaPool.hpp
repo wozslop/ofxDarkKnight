@@ -113,6 +113,7 @@ public:
     int getCurrentIndex();
     
     void setFbo(ofFbo *);
+    void onResolutionChanged(int w, int h) { mainFbo.allocate(w, h, GL_RGBA, 4); }
 	void setLight(ofLight*);
     
     void setCollectionName(string);

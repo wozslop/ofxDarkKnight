@@ -43,6 +43,7 @@ public:
 	void closeDisplay(ofEventArgs& args);
 
     void setFbo(ofFbo *);
+    void onResolutionChanged(int w, int h) { if (display) display->setWindowShape(w, h); }
     void addModuleParameters();
     ofFbo * getFbo();
     void onVideoOutputChange(ofxDatGuiDropdownEvent);
