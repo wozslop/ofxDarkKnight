@@ -34,7 +34,7 @@ ofxDarkKnight::~ofxDarkKnight()
 
 void ofxDarkKnight::setup()
 {
-    loadWires = shiftKey = altKey = cmdKey = midiMapMode = drawing = showExplorer = resolutionChangePending = moduleInsertedFromList = false;
+    loadWires = shiftKey = altKey = cmdKey = midiMapMode = drawing = showExplorer = moduleInsertedFromList = false;
     translation = { 0, 0 };
     resolution = { 1920, 1080 };
 	zoom = 1.0;
@@ -79,8 +79,6 @@ void ofxDarkKnight::setup()
 
 void ofxDarkKnight::update()
 {
-    if (resolutionChangePending) applyPendingResolution();
-
     for (auto wire : wires)
         if(wire.inputModule->getModuleEnabled() &&
            wire.outputModule->getModuleEnabled())
@@ -704,24 +702,25 @@ void ofxDarkKnight::deleteComponentWires(ofxDatGuiComponent * component, int del
 
 void ofxDarkKnight::onResolutionChange(ofVec2f & newResolution)
 {
-    pendingResolution = newResolution;
-    resolutionChangePending = true;
-}
-
-void ofxDarkKnight::applyPendingResolution()
-{
-    resolutionChangePending = false;
-    resolution = pendingResolution;
+    // Do NOT call setup() on the modules here. setup() is construction, not reconfiguration:
+    // it appends to inputs/outputs through addInputConnection/addOutputConnection instead of
+    // rebuilding them - a wired SKETCH POOL went from in=2/out=1 to in=4/out=2 across a single
+    // resolution change - and it recreates the gui components those connections were built
+    // from. Every live DKWireConnection caches raw pointers into the originals (double * scale,
+    // ofFbo * fboPtr), so the next update() dereferenced freed memory in DKWire::update() and
+    // the app died before the following draw() ever ran.
+    //
+    // setResolution records the new width/height; onResolutionChanged then lets each module
+    // reallocate just its own render target. That is safe where setup() was not, because those
+    // targets are value members (DKMediaPool::mainFbo, DKLiveShader::fbo) whose addresses are
+    // what getFbo() hands out, so reallocating in place preserves the pointer identity that
+    // live DKWireConnections depend on.
+    resolution = newResolution;
 
     for(pair<string, DKModule*> module : modules )
     {
-        // PROJECT (DKConfig) owns the dropdown that triggered this. Its setup() rebuilds
-        // that dropdown and re-registers listeners, so re-running it duplicates handlers
-        // for every change. It has no render target to resize either.
-        if (module.first.rfind("PROJECT", 0) == 0) continue;
-
-        module.second->setResolution(pendingResolution.x, pendingResolution.y);
-        module.second->setup();
+        module.second->setResolution(newResolution.x, newResolution.y);
+        module.second->onResolutionChanged(newResolution.x, newResolution.y);
     }
 }
 

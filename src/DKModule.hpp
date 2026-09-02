@@ -89,6 +89,9 @@ public:
     virtual void triggerMidiEvent(){ };
     virtual void triggerMidiMessage(ofxMidiMessage *) { };
     virtual void reset() { };
+    // Narrow counterpart to setResolution: reallocate render targets ONLY. Must not
+    // rebuild gui or connections - live DKWireConnections cache raw pointers into them.
+    virtual void onResolutionChanged(int, int) { };
     
     virtual ofFbo * getFbo(){ return nullptr; };
 	virtual ofLight* getLight() { return nullptr; };
