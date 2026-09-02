@@ -553,7 +553,12 @@ DKModule * ofxDarkKnight::addModule(string moduleName)
 	{
 		DKConfig* config = static_cast<DKConfig*>(newModule);;
 		config->setupModule("PROJECT", resolution);
-		config->gui->setPosition(ofGetScreenWidth()/2 - 160, 20);
+		// Top-centre of the CURRENT view. ofGetScreenWidth() is the monitor, not the window,
+		// and this is a canvas coordinate, so the old fixed value only landed on screen while
+		// translation was zero and zoom was 1 - i.e. at startup. Re-adding PROJECT after any
+		// pan or zoom placed it out of view, which looked like it had failed to be created.
+		config->gui->setPosition((ofGetWidth()/2 - 160 - translation.x)/zoom,
+		                         (20 - translation.y)/zoom);
 		config->setModuleMidiMapMode(midiMapMode);
 		ofAddListener(config->onResolutionChangeEvent, this, &ofxDarkKnight::onResolutionChange);
 		config->setModuleId(getNextModuleId());
