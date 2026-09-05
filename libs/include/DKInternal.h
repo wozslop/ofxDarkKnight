@@ -22,6 +22,7 @@
 
 #include "DKChain.h"
 #include "DKConfig.hpp"
+#include "DKFeedback.hpp"
 #include "DKLight.hpp"
 #include "DKLiveShader.hpp"
 #include "DKLfo.hpp"

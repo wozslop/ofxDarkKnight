@@ -8,6 +8,7 @@ void ofApp::setup()
 
     app.moduleList["ABLETON LINK"] = &moduleType<DKAbletonLink>;
     app.moduleList["CHAIN FX"] = &moduleType<DKChain>;
+    app.moduleList["FEEDBACK"] = &moduleType<DKFeedback>;
     app.moduleList["FX AA"] = &moduleType<DKFXAntiAliasing>;
     app.moduleList["FX INVERT"] = &moduleType<DKFXColorInv>;
     app.moduleList["FX MIRROR"] = &moduleType<DKFXMirror>;
