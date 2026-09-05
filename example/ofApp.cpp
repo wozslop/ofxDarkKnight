@@ -33,6 +33,7 @@ void ofApp::setup()
     app.moduleList["SEQUENCER"] = &moduleType<DKSequencer>;
     app.moduleList["SKETCH POOL"] = &moduleType<DKMediaPool>;
     app.moduleList["SKETCH POOL: DEMO"] = &moduleType<Basic>;
+    app.moduleList["WEBCAM"] = &moduleType<DKWebCam>;
 
     app.setup();
 }
