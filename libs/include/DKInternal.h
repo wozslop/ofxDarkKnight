@@ -29,5 +29,6 @@
 #include "DKMixer.hpp"
 #include "DKPerlin.hpp"
 #include "DKScreenOutput.hpp"
+#include "DKSequencer.hpp"
 #include "DKSliderInverter.hpp"
 #include "DKWebCam.h"
