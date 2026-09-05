@@ -30,6 +30,7 @@ void ofApp::setup()
     app.moduleList["PREVIEW"] = &moduleType<DKPreview>;
     app.moduleList["PROJECT"] = &moduleType<DKConfig>;
     app.moduleList["SCREEN OUTPUT"] = &moduleType<DKScreenOutput>;
+    app.moduleList["SEQUENCER"] = &moduleType<DKSequencer>;
     app.moduleList["SKETCH POOL"] = &moduleType<DKMediaPool>;
     app.moduleList["SKETCH POOL: DEMO"] = &moduleType<Basic>;
 
